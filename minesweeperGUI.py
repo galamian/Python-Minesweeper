@@ -10,12 +10,12 @@ class GUIBoardClass(boardClass):
         for y in range(0, self.boardSize):
             # returnString += str(y)
             for x in range(0, self.boardSize):
-                if self.board[x][y].mine and self.board[x][y].selected:
+                if self.values[x, y] == -1 and self.selected[x, y]:
                     returnString += 'B'
 
                     # returnString += str(self.board[x][y].value)
-                elif self.board[x][y].selected:
-                    returnString += str(self.board[x][y].value)
+                elif self.selected[x, y]:
+                    returnString += str(self.values[x, y])
                 else:  # empthy cell
                     returnString += "E"
         return returnString

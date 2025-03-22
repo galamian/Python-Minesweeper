@@ -1,46 +1,42 @@
 import random
 import numpy as np
 
-
-class boardSpot(object):
-    value = 0
-    selected = False
-    mine = False
-
-    def __init__(self):
-        self.selected = False
-
-    def __str__(self):
-        return str(boardSpot.value)
-
-    def isMine(self):
-        if boardSpot.value == -1:
-            return True
-        return False
-
-
 class boardClass(object):
     def __init__(self, m_boardSize: int, m_numMines: int, dim: int=2):
         if dim > 2:
             raise ValueError(f"Only one or two dimensions supported, got {dim}")
         
-        self.board = [[boardSpot() for i in range(m_boardSize)] for j in range(m_boardSize)]
         self.boardSize = m_boardSize
         self.numMines = m_numMines
         self.shape = (m_boardSize,) * dim
 
-        self.values = np.zeros(self.shape)
+        self.values = np.zeros(self.shape, dtype=int)
 
-        self.selectableSpots = m_boardSize * m_boardSize - m_numMines
-        i = 0
-        while i < m_numMines:
-            x = random.randint(0, self.boardSize-1)
-            y = random.randint(0, self.boardSize-1)
-            if not self.board[x][y].mine:
-                self.addMine(x, y)
-                i += 1
-            else:
-                i -= 1
+        mine_indices = np.array(np.unravel_index(np.random.choice(self.values.size, size=m_numMines, replace=False), self.values.shape))
+
+        self.values[*mine_indices] = -1
+
+        self.selected = np.zeros(shape=self.values.shape, dtype=bool)
+
+
+        for m in range(mine_indices.shape[-1]):
+            mine_index = mine_indices[:, m]
+            current_index = mine_index.copy()
+            for k in range(dim):
+                for a in [-1, 0, 1]:
+                    if mine_index[k] + a >= self.values.shape[k] or mine_index[k] + a < 0:
+                        continue
+                    current_index[k] = mine_index[k] + a
+                    for j in range(k):
+                        for b in [-1, 0, 1]:
+                            if mine_index[j] + b >= self.values.shape[j] or mine_index[j] + b < 0:
+                                continue
+                            current_index[j] = mine_index[j] + b 
+                            self.values[*current_index] += 1 if self.values[*current_index] >= 0 else 0
+
+
+
+        self.selectableSpots = (m_boardSize ** dim) - m_numMines
 
     def __str__(self):
         returnString = " "
@@ -55,56 +51,49 @@ class boardClass(object):
         for y in range(0, self.boardSize):
             returnString += str(y)
             for x in range(0, self.boardSize):
-                if self.board[x][y].mine and self.board[x][y].selected:
-                    returnString += " |" + str(self.board[x][y].value)
-                elif self.board[x][y].selected:
-                    returnString += " | " + str(self.board[x][y].value)
+                if self.values[x, y] < 0 and self.selected[x, y]:
+                    returnString += " |" + str(self.values[x, y])
+                elif self.selected[x, y]:
+                    returnString += " | " + str(self.values[x, y])
                 else:
                     returnString += " |  "
             returnString += " |"
             returnString += divider
         return returnString
 
-    def addMine(self, x, y):
-        self.board[x][y].value = -1
-        self.board[x][y].mine = True
-        for i in range(x-1, x+2):
-            if i >= 0 and i < self.boardSize:
-                if y-1 >= 0 and not self.board[i][y-1].mine:
-                    self.board[i][y-1].value += 1
-                if y+1 < self.boardSize and not self.board[i][y+1].mine:
-                    self.board[i][y+1].value += 1
-        if x-1 >= 0 and not self.board[x-1][y].mine:
-            self.board[x-1][y].value += 1
-        if x+1 < self.boardSize and not self.board[x+1][y].mine:
-            self.board[x+1][y].value += 1
-
     def makeMove(self, x, y):
-        self.board[x][y].selected = True
+        self.selected[x, y] = True
         self.selectableSpots -= 1
-        if self.board[x][y].value == -1:
+        if self.values[x, y] == -1:
             return False
-        if self.board[x][y].value == 0:
+        if self.values[x, y] == 0:
             for i in range(x-1, x+2):
                 if i >= 0 and i < self.boardSize:
-                    if y-1 >= 0 and not self.board[i][y-1].selected:
+                    if y-1 >= 0 and not self.selected[i, y-1]:
                         self.makeMove(i, y-1)
-                    if y+1 < self.boardSize and not self.board[i][y+1].selected:
+                    if y+1 < self.boardSize and not self.selected[i, y+1]:
                         self.makeMove(i, y+1)
-            if x-1 >= 0 and not self.board[x-1][y].selected:
+            if x-1 >= 0 and not self.selected[x-1,y]:
                 self.makeMove(x-1, y)
-            if x+1 < self.boardSize and not self.board[x+1][y].selected:
+            if x+1 < self.boardSize and not self.selected[x+1, y]:
                 self.makeMove(x+1, y)
             return True
         else:
             return True
 
     def hitMine(self, x, y):
-        return self.board[x][y].value == -1
+        return self.values[x, y] == -1
 
     def isWinner(self):
         return self.selectableSpots == 0
 
+def increment_tuple(t: tuple, index: int = 0, value: int = 1) -> tuple:
+    if not t or index < 0 or index >= len(t):
+        return t  # Return original tuple if empty or index is out of range
+    
+    t_list = list(t)
+    t_list[index] += value
+    return tuple(t_list)
 
 #play game
 def playGame():
