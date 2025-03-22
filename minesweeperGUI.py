@@ -1,4 +1,3 @@
-import random
 import eel
 
 from minesweeper import boardClass
@@ -51,7 +50,7 @@ def clickedOnTheCell(x, y):
     if GO_IN:
         BOARD.makeMove(x, y)
         GAME_OVER = BOARD.hitMine(x, y)
-        if BOARD.isWinner() and GAME_OVER == False:
+        if BOARD.isWinner() and GAME_OVER is False:
             GAME_OVER = True
             WINNER = True
             print("Won")
@@ -69,7 +68,7 @@ def makeBoard(boardSize, numMines, isOpen=False):
     if isOpen:
         BOARD = OpenGUIBoardClass(boardSize, numMines)
     else:
-        BOARD = GUIBoardClass(boardSize, numMines)
+        BOARD = GUIBoardClass(boardSize, numMines) # noqa: F841
 
 
 web_app_options = {

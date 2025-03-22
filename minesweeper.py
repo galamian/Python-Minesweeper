@@ -1,5 +1,3 @@
-import random
-import math
 import numpy as np
 
 class boardClass(object):
@@ -13,6 +11,7 @@ class boardClass(object):
         if dim > 2:
             raise ValueError(f"Only one or two dimensions supported, got {dim}")
         
+        self.dim = dim
         self.numMines = m_numMines
         
         self.values = np.zeros(self.shape, dtype=int)
@@ -44,8 +43,8 @@ class boardClass(object):
         return self.values.shape[0] # TODO generalize
     
     def __str__(self):
-        if dim > 2:
-            raise ValueError(f"Only one or two dimensions supported, got {dim}")
+        if self.dim > 2:
+            raise ValueError(f"Only one or two dimensions supported, got {self.dim}")
         returnString = " "
         divider = "\n---"
 
@@ -119,7 +118,7 @@ def playGame():
         y = int(input("y: "))
         Board.makeMove(x, y)
         gameOver = Board.hitMine(x, y)
-        if Board.isWinner() and gameOver == False:
+        if Board.isWinner() and gameOver is False:
             gameOver = True
             winner = True
 
