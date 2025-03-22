@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 
 class boardSpot(object):
@@ -19,10 +20,17 @@ class boardSpot(object):
 
 
 class boardClass(object):
-    def __init__(self, m_boardSize, m_numMines):
+    def __init__(self, m_boardSize: int, m_numMines: int, dim: int=2):
+        if dim > 2:
+            raise ValueError(f"Only one or two dimensions supported, got {dim}")
+        
         self.board = [[boardSpot() for i in range(m_boardSize)] for j in range(m_boardSize)]
         self.boardSize = m_boardSize
         self.numMines = m_numMines
+        self.shape = (m_boardSize,) * dim
+
+        self.values = np.zeros(self.shape)
+
         self.selectableSpots = m_boardSize * m_boardSize - m_numMines
         i = 0
         while i < m_numMines:
@@ -102,9 +110,10 @@ class boardClass(object):
 def playGame():
     boardSize = int(input("Choose the Width of the board: "))
     numMines = int(input("Choose the number of mines: "))
+    dim = int(input("Choose dimensions of board."))
     gameOver = False
     winner = False
-    Board = boardClass(boardSize, numMines)
+    Board = boardClass(boardSize, numMines, dim=dim)
     while not gameOver:
         print(Board)
         print("Make your move:")
@@ -122,4 +131,5 @@ def playGame():
     else:
         print("You hit a mine, Game Over!")
 
-playGame()
+if __name__ == "__main__":
+    playGame()
