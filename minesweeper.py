@@ -1,23 +1,25 @@
 import random
+import math
 import numpy as np
 
 class boardClass(object):
-    def __init__(self, m_boardSize: int, m_numMines: int, dim: int=2):
+    def __init__(self, m_boardSize: int | tuple[int, ...], m_numMines: int, dim: int=2):
+        if isinstance(m_boardSize, tuple):
+            dim = len(m_boardSize)
+            self.shape = m_boardSize
+        else:
+            self.shape = (m_boardSize,) * dim
+
         if dim > 2:
             raise ValueError(f"Only one or two dimensions supported, got {dim}")
         
-        self.boardSize = m_boardSize
         self.numMines = m_numMines
-        self.shape = (m_boardSize,) * dim
-
+        
         self.values = np.zeros(self.shape, dtype=int)
-
-        mine_indices = np.array(np.unravel_index(np.random.choice(self.values.size, size=m_numMines, replace=False), self.values.shape))
-
-        self.values[*mine_indices] = -1
-
         self.selected = np.zeros(shape=self.values.shape, dtype=bool)
 
+        mine_indices = np.array(np.unravel_index(np.random.choice(self.values.size, size=m_numMines, replace=False), self.values.shape))
+        self.values[*mine_indices] = -1
 
         for m in range(mine_indices.shape[-1]):
             mine_index = mine_indices[:, m]
@@ -35,17 +37,24 @@ class boardClass(object):
                             self.values[*current_index] += 1 if self.values[*current_index] >= 0 else 0
 
 
+        self.selectableSpots = self.values.size - m_numMines
 
-        self.selectableSpots = (m_boardSize ** dim) - m_numMines
-
+    @property
+    def boardSize(self):
+        return self.values.shape[0] # TODO generalize
+    
     def __str__(self):
+        if dim > 2:
+            raise ValueError(f"Only one or two dimensions supported, got {dim}")
         returnString = " "
         divider = "\n---"
 
-        for i in range(0, self.boardSize):
-            returnString += " | " + str(i)
-            divider += "----"
-        divider += "\n"
+        if len(self.values.shape > 1):
+
+            for i in range(0, self.values.shape[0]):
+                returnString += " | " + str(i)
+                divider += "----"
+            divider += "\n"
 
         returnString += divider
         for y in range(0, self.boardSize):
@@ -99,7 +108,7 @@ def increment_tuple(t: tuple, index: int = 0, value: int = 1) -> tuple:
 def playGame():
     boardSize = int(input("Choose the Width of the board: "))
     numMines = int(input("Choose the number of mines: "))
-    dim = int(input("Choose dimensions of board."))
+    dim = int(input("Choose dimensions of board: "))
     gameOver = False
     winner = False
     Board = boardClass(boardSize, numMines, dim=dim)

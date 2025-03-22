@@ -9,6 +9,7 @@ function startNew(mode) {
   // hard   -> 18X32=576   -> 100 bombs | 24 -> 100 bombs
   // extreme-> 26X50=1300  -> 220 bombs | 30 -> 200 bombs
   // const mode = element.value;
+  isOpen = document.getElementById('isOpen').checked;
   if (mode === "easy") {
     size = 10;
     bombs = 15;
@@ -32,7 +33,7 @@ function startNew(mode) {
   document.getElementById("h1").classList.remove("won");
   document.getElementById("h1").classList.remove("lost");
   document.getElementById("h1").innerHTML = `Minesweeper`;
-  eel.makeBoard(size, bombs)(); //size, bombs
+  eel.makeBoard(size, bombs, isOpen)(); //size, bombs
   drawFirst();
 }
 

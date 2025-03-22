@@ -21,6 +21,19 @@ class GUIBoardClass(boardClass):
         return returnString
 
 
+class OpenGUIBoardClass(boardClass):
+    def __str__(self):
+        returnString = ""
+        for y in range(0, self.boardSize):
+            # returnString += str(y)
+            for x in range(0, self.boardSize):
+                if self.values[x, y] == -1:
+                    returnString += str(0)
+                else:
+                    returnString += str(self.values[x, y])
+        return returnString
+
+
 #### For UI ####
 eel.init('.//UI')  # path of the webpage folder
 
@@ -50,10 +63,13 @@ def clickedOnTheCell(x, y):
 
 
 @eel.expose
-def makeBoard(boardSize, numMines):
+def makeBoard(boardSize, numMines, isOpen=False):
     global BOARD
     del BOARD
-    BOARD = GUIBoardClass(boardSize, numMines)
+    if isOpen:
+        BOARD = OpenGUIBoardClass(boardSize, numMines)
+    else:
+        BOARD = GUIBoardClass(boardSize, numMines)
 
 
 web_app_options = {
