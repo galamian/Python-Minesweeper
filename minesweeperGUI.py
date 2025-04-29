@@ -1,95 +1,36 @@
-import random
 import eel
 
-
-class boardSpot(object):
-    value = 0
-    selected = False
-    mine = False
-
-    def __init__(self):
-        self.selected = False
-
-    def __str__(self):
-        return str(boardSpot.value)
-
-    def isMine(self):
-        if boardSpot.value == -1:
-            return True
-        return False
+from minesweeper import boardClass
 
 
-class boardClass(object):
-    def __init__(self, m_boardSize, m_numMines):
-        self.board = [[boardSpot() for i in range(m_boardSize)]
-                      for j in range(m_boardSize)]
-        self.boardSize = m_boardSize
-        self.numMines = m_numMines
-        self.selectableSpots = m_boardSize * m_boardSize - m_numMines
-        i = 0
-        while i < m_numMines:
-            x = random.randint(0, self.boardSize-1)
-            y = random.randint(0, self.boardSize-1)
-            if not self.board[x][y].mine:
-                self.addMine(x, y)
-                i += 1
-            else:
-                i -= 1
-
+class GUIBoardClass(boardClass):
     def __str__(self):
         returnString = ""
         for y in range(0, self.boardSize):
             # returnString += str(y)
             for x in range(0, self.boardSize):
-                if self.board[x][y].mine and self.board[x][y].selected:
+                if self.values[x, y] == -1 and self.selected[x, y]:
                     returnString += 'B'
 
                     # returnString += str(self.board[x][y].value)
-                elif self.board[x][y].selected:
-                    returnString += str(self.board[x][y].value)
+                elif self.selected[x, y]:
+                    returnString += str(self.values[x, y])
                 else:  # empthy cell
                     returnString += "E"
         return returnString
 
-    def addMine(self, x, y):
-        self.board[x][y].value = -1
-        self.board[x][y].mine = True
-        for i in range(x-1, x+2):
-            if i >= 0 and i < self.boardSize:
-                if y-1 >= 0 and not self.board[i][y-1].mine:
-                    self.board[i][y-1].value += 1
-                if y+1 < self.boardSize and not self.board[i][y+1].mine:
-                    self.board[i][y+1].value += 1
-        if x-1 >= 0 and not self.board[x-1][y].mine:
-            self.board[x-1][y].value += 1
-        if x+1 < self.boardSize and not self.board[x+1][y].mine:
-            self.board[x+1][y].value += 1
 
-    def makeMove(self, x, y):
-        self.board[x][y].selected = True
-        self.selectableSpots -= 1
-        if self.board[x][y].value == -1:
-            return False
-        if self.board[x][y].value == 0:
-            for i in range(x-1, x+2):
-                if i >= 0 and i < self.boardSize:
-                    if y-1 >= 0 and not self.board[i][y-1].selected:
-                        self.makeMove(i, y-1)
-                    if y+1 < self.boardSize and not self.board[i][y+1].selected:
-                        self.makeMove(i, y+1)
-            if x-1 >= 0 and not self.board[x-1][y].selected:
-                self.makeMove(x-1, y)
-            if x+1 < self.boardSize and not self.board[x+1][y].selected:
-                self.makeMove(x+1, y)
-            return True
-        else:
-            return True
-
-    def hitMine(self, x, y):
-        return self.board[x][y].value == -1
-
-    def isWinner(self):
-        return self.selectableSpots == 0
+class OpenGUIBoardClass(boardClass):
+    def __str__(self):
+        returnString = ""
+        for y in range(0, self.boardSize):
+            # returnString += str(y)
+            for x in range(0, self.boardSize):
+                if self.values[x, y] == -1:
+                    returnString += str(0)
+                else:
+                    returnString += str(self.values[x, y])
+        return returnString
 
 
 #### For UI ####
@@ -109,7 +50,7 @@ def clickedOnTheCell(x, y):
     if GO_IN:
         BOARD.makeMove(x, y)
         GAME_OVER = BOARD.hitMine(x, y)
-        if BOARD.isWinner() and GAME_OVER == False:
+        if BOARD.isWinner() and GAME_OVER is False:
             GAME_OVER = True
             WINNER = True
             print("Won")
@@ -121,10 +62,13 @@ def clickedOnTheCell(x, y):
 
 
 @eel.expose
-def makeBoard(boardSize, numMines):
+def makeBoard(boardSize, numMines, isOpen=False):
     global BOARD
     del BOARD
-    BOARD = boardClass(boardSize, numMines)
+    if isOpen:
+        BOARD = OpenGUIBoardClass(boardSize, numMines)
+    else:
+        BOARD = GUIBoardClass(boardSize, numMines) # noqa: F841
 
 
 web_app_options = {
